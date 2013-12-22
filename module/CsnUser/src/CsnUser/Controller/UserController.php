@@ -59,7 +59,7 @@ class UserController extends AbstractActionController
                         }                         
                 }
                 else {
-                        $form->setData($this->getUsersTable()->select(array('usr_id' => $id))->current());                        
+                        $form->setData($this->getUsersTable()->select(array('user_id' => $id))->current());                        
                 }
                 return new ViewModel(array('form' => $form, 'id' => $id));                
         }

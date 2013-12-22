@@ -13,8 +13,8 @@
                         <td><?php  echo $row->user_id; // The row is an ArrayObject $row->usr_id and $row['usr_id'] with both work?></td>
                         <td><?php  echo $row['user_name']; ?></td>
                         <td><?php  echo $row['user_email']; ?></td>
-                        <td><a href="<?php echo $this->url('csn_user/default', array('controller' => 'user', 'action' => 'update', 'id' => $row['usr_id'])); ?>">Edit</a></td>
-                        <td><a href="<?php echo $this->url('csn_user/default', array('controller' => 'user', 'action' => 'delete', 'id' => $row['usr_id']));?>" onclick="return confirm('Do you rely want to delete the record?')">Delete</a></td>
+                        <td><a href="<?php echo $this->url('csn_user/default', array('controller' => 'user', 'action' => 'update', 'id' => $row['user_id'])); ?>">Edit</a></td>
+                        <td><a href="<?php echo $this->url('csn_user/default', array('controller' => 'user', 'action' => 'delete', 'id' => $row['user_id']));?>" onclick="return confirm('Do you really want to delete the record?')">Delete</a></td>
                 </tr>
 <?php
         }
