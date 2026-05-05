@@ -1,46 +1,40 @@
-version: "2"
+language: en-US
 
 reviews:
-  # Automatically review every new pull request
+  profile: assertive
+  high_level_summary: true
   auto_review:
     enabled: true
     drafts: false
-    base_branches:
-      - master
+    auto_incremental_review: true
 
-  # Review profile: chill = concise, assertive = thorough
-  profile: assertive
-
-  # Focus areas for the review
-  review_status: true
+  path_filters:
+    - "!vendor/**"
+    - "!composer.phar"
 
   path_instructions:
     - path: "module/**/*.php"
       instructions: |
         Review PHP code for:
-        - SQL injection: raw string concatenation in queries must be flagged
-        - XSS: all output to views must use escapeHtml() or equivalent
-        - Hardcoded credentials or secrets
-        - Missing type casts on user-supplied IDs (must be cast to int)
-        - Direct superglobal access ($_GET, $_POST, $_REQUEST) — use framework request abstraction instead
-        - Missing semicolons and other syntax errors
-        - Unhandled exceptions and missing error handling
+        - SQL injection: flag any raw string concatenation inside queries; parameterised statements or TableGateway methods must be used instead
+        - XSS: every value echoed in a view must be escaped with escapeHtml() or equivalent
+        - Hardcoded credentials or secrets (passwords, API keys, tokens)
+        - Missing (int) cast on user-supplied IDs before use in queries
+        - Direct superglobal access ($_GET, $_POST, $_REQUEST, $_SERVER) — Zend Framework request abstraction must be used instead
+        - PHP syntax errors: missing semicolons, mismatched brackets, incorrect operators
+        - Unhandled exceptions and missing input validation
     - path: "module/**/*.phtml"
       instructions: |
         Review view templates for:
-        - Unescaped output — every echo of user-controlled data must use escapeHtml()
-        - Reflected XSS via $_GET or $_POST used directly
-        - Inline JavaScript that accepts user input without sanitisation
+        - Any echo of user-controlled data without escapeHtml()
+        - Direct use of $_GET or $_POST values in output (reflected XSS)
+        - Unsafe inline JavaScript that accepts or reflects user input
 
-  # Which categories to report
-  tools:
-    github-checks:
-      enabled: true
-
-  finishing_touches:
-    docstrings:
-      enabled: false
+tools:
+  semgrep:
+    enabled: true
+  trufflehog:
+    enabled: true
 
 chat:
-  # Allow CodeRabbit to reply to PR comments
   auto_reply: true
