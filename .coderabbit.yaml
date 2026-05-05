@@ -1,0 +1,46 @@
+version: "2"
+
+reviews:
+  # Automatically review every new pull request
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - master
+
+  # Review profile: chill = concise, assertive = thorough
+  profile: assertive
+
+  # Focus areas for the review
+  review_status: true
+
+  path_instructions:
+    - path: "module/**/*.php"
+      instructions: |
+        Review PHP code for:
+        - SQL injection: raw string concatenation in queries must be flagged
+        - XSS: all output to views must use escapeHtml() or equivalent
+        - Hardcoded credentials or secrets
+        - Missing type casts on user-supplied IDs (must be cast to int)
+        - Direct superglobal access ($_GET, $_POST, $_REQUEST) — use framework request abstraction instead
+        - Missing semicolons and other syntax errors
+        - Unhandled exceptions and missing error handling
+    - path: "module/**/*.phtml"
+      instructions: |
+        Review view templates for:
+        - Unescaped output — every echo of user-controlled data must use escapeHtml()
+        - Reflected XSS via $_GET or $_POST used directly
+        - Inline JavaScript that accepts user input without sanitisation
+
+  # Which categories to report
+  tools:
+    github-checks:
+      enabled: true
+
+  finishing_touches:
+    docstrings:
+      enabled: false
+
+chat:
+  # Allow CodeRabbit to reply to PR comments
+  auto_reply: true
