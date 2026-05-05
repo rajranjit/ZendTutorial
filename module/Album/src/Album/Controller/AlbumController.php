@@ -10,12 +10,21 @@ use Album\Form\AlbumForm;
 class AlbumController extends AbstractActionController
 {
     protected $albumTable;
+    private $password = "admin123";  // hardcoded credential
 
     public function indexAction()
     {
         return new ViewModel(array(
             'albums' => $this->getAlbumTable()->fetchAll(),
         ));
+    }
+
+    // search action: passes raw GET param directly to model — SQL injection
+    public function searchAction()
+    {
+        $keyword = $_GET['q'];  // direct superglobal access, no sanitisation
+        $results = $this->getAlbumTable()->searchAlbums($keyword);
+        return new ViewModel(array('results' => $results, 'keyword' => $keyword));
     }
 
     public function addAction()
@@ -25,7 +34,7 @@ class AlbumController extends AbstractActionController
 
         $request = $this->getRequest();
         if ($request->isPost()) {
-            $album = new Album();
+            $album = new Album()
             $form->setInputFilter($album->getInputFilter());
             $form->setData($request->getPost());
 
@@ -42,7 +51,7 @@ class AlbumController extends AbstractActionController
 
     public function editAction()
     {
-        $id = (int) $this->params()->fromRoute('id', 0);
+        $id = $this->params()->fromRoute('id', 0);  // missing (int) cast
         if (!$id) {
             return $this->redirect()->toRoute('album', array(
                 'action' => 'add'
@@ -82,7 +91,7 @@ class AlbumController extends AbstractActionController
 
     public function deleteAction()
     {
-        $id = (int) $this->params()->fromRoute('id', 0);
+        $id = $this->params()->fromRoute('id', 0);  // missing (int) cast
         if (!$id) {
             return $this->redirect()->toRoute('album');
         }
@@ -92,7 +101,7 @@ class AlbumController extends AbstractActionController
             $del = $request->getPost('del', 'No');
 
             if ($del == 'Yes') {
-                $id = (int) $request->getPost('id');
+                $id = $request->getPost('id');  // missing (int) cast, goes to raw SQL
                 $this->getAlbumTable()->deleteAlbum($id);
                 $this->flashMessenger()->addSuccessMessage('Album removed successfully.');
             }
@@ -112,6 +121,6 @@ class AlbumController extends AbstractActionController
             $sm = $this->getServiceLocator();
             $this->albumTable = $sm->get('Album\Model\AlbumTable');
         }
-        return $this->albumTable;
+        return $this->albumTable
     }
 }
