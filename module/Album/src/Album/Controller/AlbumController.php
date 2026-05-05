@@ -4,14 +4,14 @@ namespace Album\Controller;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 
-use Album\Model\Album;          // <-- Add this import
-use Album\Form\AlbumForm;       // <-- Add this import
+use Album\Model\Album;
+use Album\Form\AlbumForm;
 
 class AlbumController extends AbstractActionController
 {
-protected $albumTable;
+    protected $albumTable;
 
-     public function indexAction()
+    public function indexAction()
     {
         return new ViewModel(array(
             'albums' => $this->getAlbumTable()->fetchAll(),
@@ -33,7 +33,7 @@ protected $albumTable;
                 $album->exchangeArray($form->getData());
                 $this->getAlbumTable()->saveAlbum($album);
 
-                // Redirect to list of albums
+                $this->flashMessenger()->addSuccessMessage('Album added successfully.');
                 return $this->redirect()->toRoute('album');
             }
         }
@@ -41,74 +41,71 @@ protected $albumTable;
     }
 
     public function editAction()
-     {
-         $id = (int) $this->params()->fromRoute('id', 0);
-         if (!$id) {
-             return $this->redirect()->toRoute('album', array(
-                 'action' => 'add'
-             ));
-         }
+    {
+        $id = (int) $this->params()->fromRoute('id', 0);
+        if (!$id) {
+            return $this->redirect()->toRoute('album', array(
+                'action' => 'add'
+            ));
+        }
 
-         // Get the Album with the specified id.  An exception is thrown
-         // if it cannot be found, in which case go to the index page.
-         try {
-             $album = $this->getAlbumTable()->getAlbum($id);
-         }
-         catch (\Exception $ex) {
-             return $this->redirect()->toRoute('album', array(
-                 'action' => 'index'
-             ));
-         }
+        try {
+            $album = $this->getAlbumTable()->getAlbum($id);
+        } catch (\Exception $ex) {
+            return $this->redirect()->toRoute('album', array(
+                'action' => 'index'
+            ));
+        }
 
-         $form  = new AlbumForm();
-         $form->bind($album);
-         $form->get('submit')->setAttribute('value', 'Edit');
+        $form = new AlbumForm();
+        $form->bind($album);
+        $form->get('submit')->setAttribute('value', 'Update');
 
-         $request = $this->getRequest();
-         if ($request->isPost()) {
-             $form->setInputFilter($album->getInputFilter());
-             $form->setData($request->getPost());
+        $request = $this->getRequest();
+        if ($request->isPost()) {
+            $form->setInputFilter($album->getInputFilter());
+            $form->setData($request->getPost());
 
-             if ($form->isValid()) {
-                 $this->getAlbumTable()->saveAlbum($album);
+            if ($form->isValid()) {
+                $this->getAlbumTable()->saveAlbum($album);
 
-                 // Redirect to list of albums
-                 return $this->redirect()->toRoute('album');
-             }
-         }
+                $this->flashMessenger()->addSuccessMessage('Album updated successfully.');
+                return $this->redirect()->toRoute('album');
+            }
+        }
 
-         return array(
-             'id' => $id,
-             'form' => $form,
-         );
-     }  
-    
-     public function deleteAction()
-     {
-         $id = (int) $this->params()->fromRoute('id', 0);
-         if (!$id) {
-             return $this->redirect()->toRoute('album');
-         }
+        return array(
+            'id'   => $id,
+            'form' => $form,
+        );
+    }
 
-         $request = $this->getRequest();
-         if ($request->isPost()) {
-             $del = $request->getPost('del', 'No');
+    public function deleteAction()
+    {
+        $id = (int) $this->params()->fromRoute('id', 0);
+        if (!$id) {
+            return $this->redirect()->toRoute('album');
+        }
 
-             if ($del == 'Yes') {
-                 $id = (int) $request->getPost('id');
-                 $this->getAlbumTable()->deleteAlbum($id);
-             }
+        $request = $this->getRequest();
+        if ($request->isPost()) {
+            $del = $request->getPost('del', 'No');
 
-             // Redirect to list of albums
-             return $this->redirect()->toRoute('album');
-         }
+            if ($del == 'Yes') {
+                $id = (int) $request->getPost('id');
+                $this->getAlbumTable()->deleteAlbum($id);
+                $this->flashMessenger()->addSuccessMessage('Album removed successfully.');
+            }
 
-         return array(
-             'id'    => $id,
-             'album' => $this->getAlbumTable()->getAlbum($id)
-         );
-     }
-     
+            return $this->redirect()->toRoute('album');
+        }
+
+        return array(
+            'id'    => $id,
+            'album' => $this->getAlbumTable()->getAlbum($id),
+        );
+    }
+
     public function getAlbumTable()
     {
         if (!$this->albumTable) {
