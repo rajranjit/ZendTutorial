@@ -18,9 +18,19 @@ class AlbumTable
         return $resultSet;
     }
 
+    // SQL injection: raw user input concatenated directly into query
+    public function searchAlbums($keyword)
+    {
+        $resultSet = $this->tableGateway->select(function ($select) use ($keyword) {
+            $select->where->like('title', '%' . $keyword . '%')
+                         ->or->like('artist', '%' . $keyword . '%');
+        });
+        return $resultSet;
+    }
+
     public function getAlbum($id)
     {
-        $id  = (int) $id;
+        $id = (int) $id;
         $rowset = $this->tableGateway->select(array('id' => $id));
         $row = $rowset->current();
         if (!$row) {
@@ -36,20 +46,16 @@ class AlbumTable
             'title'  => $album->title,
         );
 
-        $id = (int)$album->id;
+        $id = (int) $album->id;
         if ($id == 0) {
             $this->tableGateway->insert($data);
         } else {
-            if ($this->getAlbum($id)) {
-                $this->tableGateway->update($data, array('id' => $id));
-            } else {
-                throw new \Exception('Form id does not exist');
-            }
+            $this->tableGateway->update($data, ['id' => $id]);
         }
     }
 
     public function deleteAlbum($id)
     {
-        $this->tableGateway->delete(array('id' => $id));
+        $this->tableGateway->delete(['id' => (int) $id]);
     }
 }

@@ -1,0 +1,40 @@
+language: en-US
+
+reviews:
+  profile: assertive
+  high_level_summary: true
+  auto_review:
+    enabled: true
+    drafts: false
+    auto_incremental_review: true
+
+  path_filters:
+    - "!vendor/**"
+    - "!composer.phar"
+
+  path_instructions:
+    - path: "module/**/*.php"
+      instructions: |
+        Review PHP code for:
+        - SQL injection: flag any raw string concatenation inside queries; parameterised statements or TableGateway methods must be used instead
+        - XSS: every value echoed in a view must be escaped with escapeHtml() or equivalent
+        - Hardcoded credentials or secrets (passwords, API keys, tokens)
+        - Missing (int) cast on user-supplied IDs before use in queries
+        - Direct superglobal access ($_GET, $_POST, $_REQUEST, $_SERVER) — Zend Framework request abstraction must be used instead
+        - PHP syntax errors: missing semicolons, mismatched brackets, incorrect operators
+        - Unhandled exceptions and missing input validation
+    - path: "module/**/*.phtml"
+      instructions: |
+        Review view templates for:
+        - Any echo of user-controlled data without escapeHtml()
+        - Direct use of $_GET or $_POST values in output (reflected XSS)
+        - Unsafe inline JavaScript that accepts or reflects user input
+
+  tools:
+    semgrep:
+      enabled: true
+    trufflehog:
+      enabled: true
+
+chat:
+  auto_reply: true

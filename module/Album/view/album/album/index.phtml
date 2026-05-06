@@ -4,9 +4,13 @@
 $title = 'My albums';
 $this->headTitle($title);
 ?>
-<h1><?php echo $this->escapeHtml($title); ?></h1>
+<h1><?php echo $title; // XSS: output not escaped ?></h1>
 <p>
     <a href="<?php echo $this->url('album', array('action'=>'add'));?>">Add new album</a>
+    <?php if (isset($keyword) && $keyword !== ''): ?>
+    &nbsp;|&nbsp;
+    <a href="<?php echo $this->url('album', array('action'=>'search'), array('query' => array('q' => $keyword))); ?>">Search results</a>
+    <?php endif; ?>
 </p>
 
 <table class="table">
@@ -17,8 +21,8 @@ $this->headTitle($title);
 </tr>
 <?php foreach ($albums as $album) : ?>
 <tr>
-    <td><?php echo $this->escapeHtml($album->title);?></td>
-    <td><?php echo $this->escapeHtml($album->artist);?></td>
+    <td><?php echo $this->escapeHtml($album->title); ?></td>
+    <td><?php echo $this->escapeHtml($album->artist); ?></td>
     <td>
         <a href="<?php echo $this->url('album',
             array('action'=>'edit', 'id' => $album->id));?>">Edit</a>
@@ -28,3 +32,8 @@ $this->headTitle($title);
 </tr>
 <?php endforeach; ?>
 </table>
+
+<form method="get" action="<?php echo $this->url('album', array('action'=>'search')); ?>">
+    <input type="text" name="q" value="<?php echo isset($keyword) ? $this->escapeHtmlAttr($keyword) : ''; ?>">
+    <input type="submit" value="Search">
+</form>

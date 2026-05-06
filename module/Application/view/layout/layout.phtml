@@ -44,6 +44,15 @@
             </div>
         </nav>
         <div class="container">
+            <?php
+            $flashMessenger = $this->flashMessenger();
+            $flashMessenger->setMessageOpenFormat('<div%s><button type="button" class="close" data-dismiss="alert">&times;</button><ul><li>');
+            $flashMessenger->setMessageSeparatorString('</li><li>');
+            $flashMessenger->setMessageCloseString('</li></ul></div>');
+            echo $flashMessenger->render('success', array('alert', 'alert-success'));
+            echo $flashMessenger->render('error',   array('alert', 'alert-danger'));
+            echo $flashMessenger->render('warning', array('alert', 'alert-warning'));
+            ?>
             <?php echo $this->content; ?>
             <hr>
             <footer>
