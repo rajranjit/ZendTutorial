@@ -10,20 +10,35 @@ use Album\Form\AlbumForm;
 class AlbumController extends AbstractActionController
 {
     protected $albumTable;
-    private $password = "admin123";  // hardcoded credential
+    private $password;
+
+    public function __construct($adminPassword)
+    {
+        $this->password = $adminPassword;
+    }
 
     public function indexAction()
     {
+        $keyword = $this->params()->fromQuery('q', '');
         return new ViewModel(array(
             'albums' => $this->getAlbumTable()->fetchAll(),
+            'keyword' => $keyword,
         ));
     }
 
     // search action: passes raw GET param directly to model — SQL injection
     public function searchAction()
     {
-        $keyword = $_GET['q'];  // direct superglobal access, no sanitisation
-        $results = $this->getAlbumTable()->searchAlbums($keyword);
+        $keyword = $this->params()->fromQuery('q', null);
+        $keyword = $keyword !== null ? trim($keyword) : '';
+
+        if ($keyword === '' || strlen($keyword) > 100) {
+            $keyword = '';
+            $results = array();
+        } else {
+            $results = $this->getAlbumTable()->searchAlbums($keyword);
+        }
+
         return new ViewModel(array('results' => $results, 'keyword' => $keyword));
     }
 
@@ -34,7 +49,7 @@ class AlbumController extends AbstractActionController
 
         $request = $this->getRequest();
         if ($request->isPost()) {
-            $album = new Album()
+            $album = new Album();
             $form->setInputFilter($album->getInputFilter());
             $form->setData($request->getPost());
 
@@ -51,7 +66,7 @@ class AlbumController extends AbstractActionController
 
     public function editAction()
     {
-        $id = $this->params()->fromRoute('id', 0);  // missing (int) cast
+        $id = (int) $this->params()->fromRoute('id', 0);
         if (!$id) {
             return $this->redirect()->toRoute('album', array(
                 'action' => 'add'
@@ -91,7 +106,7 @@ class AlbumController extends AbstractActionController
 
     public function deleteAction()
     {
-        $id = $this->params()->fromRoute('id', 0);  // missing (int) cast
+        $id = (int) $this->params()->fromRoute('id', 0);
         if (!$id) {
             return $this->redirect()->toRoute('album');
         }
@@ -101,7 +116,7 @@ class AlbumController extends AbstractActionController
             $del = $request->getPost('del', 'No');
 
             if ($del == 'Yes') {
-                $id = $request->getPost('id');  // missing (int) cast, goes to raw SQL
+                $id = (int) $request->getPost('id');
                 $this->getAlbumTable()->deleteAlbum($id);
                 $this->flashMessenger()->addSuccessMessage('Album removed successfully.');
             }
@@ -121,6 +136,6 @@ class AlbumController extends AbstractActionController
             $sm = $this->getServiceLocator();
             $this->albumTable = $sm->get('Album\Model\AlbumTable');
         }
-        return $this->albumTable
+        return $this->albumTable;
     }
 }

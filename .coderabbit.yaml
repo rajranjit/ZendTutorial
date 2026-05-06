@@ -30,11 +30,11 @@ reviews:
         - Direct use of $_GET or $_POST values in output (reflected XSS)
         - Unsafe inline JavaScript that accepts or reflects user input
 
-tools:
-  semgrep:
-    enabled: true
-  trufflehog:
-    enabled: true
+  tools:
+    semgrep:
+      enabled: true
+    trufflehog:
+      enabled: true
 
 chat:
   auto_reply: true
